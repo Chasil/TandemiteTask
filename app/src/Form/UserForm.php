@@ -4,13 +4,15 @@ namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Twig\Node\Expression\Test\SameasTest;
 
-class Form extends AbstractType
+class UserForm extends AbstractType
 {
 	public function buildForm(FormBuilderInterface $builder, array $options): void
 	{
@@ -41,6 +43,9 @@ class Form extends AbstractType
 						'mimeTypesMessage' => 'Please upload a valid image file (JPEG, PNG, GIF).',
 					]),
 				],
+			])
+			->add('save', SubmitType::class, [
+				'label' => 'Save',
 			]);
 	}
 

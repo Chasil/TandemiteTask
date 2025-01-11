@@ -3,7 +3,7 @@
 namespace App\Tests\Form;
 
 use Symfony\Component\Form\Test\TypeTestCase;
-use App\Form\Form;
+use App\Form\UserForm;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class FormDataTest extends TypeTestCase
@@ -40,7 +40,7 @@ class FormDataTest extends TypeTestCase
 	 */
 	public function testSubmitValidData($formData, $isValid)
 	{
-		$form = $this->factory->create(Form::class);
+		$form = $this->factory->create(UserForm::class);
 
 		$form->submit($formData);
 
