@@ -4,27 +4,28 @@ namespace App\Controller;
 
 use App\Entity\UserData;
 use App\Form\UserForm;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Message\SaveUserDataMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
-    #[Route('/', name: 'app_home')]
-    public function index(Request $request, EntityManagerInterface $emi): Response
-    {
+	#[Route('/', name: 'app_home')]
+	public function index(Request $request, MessageBusInterface $bus): Response
+	{
 		$userData = new UserData();
+
 		$form = $this->createForm(UserForm::class, $userData);
 		$form->handleRequest($request);
 
 		if ($form->isSubmitted() && $form->isValid()) {
-
 			$uploadedFile = $form->get('attachment')->getData();
+			$newFilename = null;
 
-			if($uploadedFile) {
-
+			if ($uploadedFile) {
 				$newFilename = uniqid() . '.' . $uploadedFile->guessExtension();
 
 				try {
@@ -36,20 +37,23 @@ class HomeController extends AbstractController
 					$this->addFlash('error', 'An error occurred while uploading the file.');
 					return $this->redirectToRoute('app_home');
 				}
-
-				$userData->setAttachment($newFilename);
 			}
 
-			$emi->persist($userData);
-			$emi->flush();
+			$bus->dispatch(
+				new SaveUserDataMessage(
+					$userData->getName(),
+					$userData->getLastname(),
+					$newFilename
+				)
+			);
 
-			$this->addFlash('success', 'Form submitted successfully!');
+			$this->addFlash('success', 'User data submitted successfully!');
 			return $this->redirectToRoute('app_home');
 		}
 
-        return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
-	        'user_form' => $form->createView(),
-        ]);
-    }
+		return $this->render('home/index.html.twig', [
+			'controller_name' => 'HomeController',
+			'user_form' => $form->createView(),
+		]);
+	}
 }

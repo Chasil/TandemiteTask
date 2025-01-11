@@ -19,7 +19,6 @@ class UserData
 	#[ORM\Column(length: 255)]
 	private ?string $lastname = null;
 
-	// Zamiast 'attachement' -> 'attachment'
 	#[ORM\Column(length: 255, nullable: true)]
 	private ?string $attachment = null;
 

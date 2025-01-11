@@ -23,3 +23,18 @@ services:
       - './app:/app'
     depends_on:
       - mariadb
+    command: symfony serve --port=8000 --no-interaction
+  myapp-worker:
+    image: docker.io/bitnami/symfony:6.4
+    depends_on:
+      - mariadb
+    volumes:
+      - './app:/app'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USERNAME=bn_myapp
+      - DB_DATABASE=bitnami_myapp
+      - SYMFONY_PROJECT_SKELETON=symfony/skeleton
+    command: php bin/console messenger:consume async -vv

@@ -2,12 +2,12 @@
 
 namespace App\Message;
 
-class SaveUserDataMessage
+readonly class SaveUserDataMessage
 {
 	public function __construct(
-		private readonly string $name,
-		private readonly string $lastname,
-		private readonly ?string $uploadedFilePath,  // ścieżka lub nazwa pliku
+		private string  $name,
+		private string  $lastname,
+		private ?string $uploadedFilePath,
 	) {
 	}
 
