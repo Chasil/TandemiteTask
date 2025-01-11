@@ -23,7 +23,6 @@ services:
       - './app:/app'
     depends_on:
       - mariadb
-    command: symfony serve --port=8000 --no-interaction
   myapp-worker:
     image: docker.io/bitnami/symfony:6.4
     depends_on:
