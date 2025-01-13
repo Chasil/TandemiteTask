@@ -37,14 +37,31 @@ class FormDataTest extends TypeTestCase
 		}
 
 		return [
-			// 1) Brak pliku => powinno przejść, bo pole jest 'required' => false
 			'valid no file' => [
 				'formData' => [
 					'name'      => 'Jan',
 					'lastname'  => 'Kowalski',
-					'attachment' => null, // brak pliku
+					'attachment' => null,
 				],
 				'isValid' => true,
+			],
+
+			'empty lastname' => [
+				'formData' => [
+					'name'      => 'Mateusz',
+					'lastname'  => '',
+					'attachment' => null,
+				],
+				'isValid' => false,
+			],
+
+			'empty name' => [
+				'formData' => [
+					'name'      => '',
+					'lastname'  => 'Wojcik',
+					'attachment' => null,
+				],
+				'isValid' => false,
 			],
 
 			// 2) Wszystko poprawne, plik < 2 MB, MIME = image/png
@@ -61,38 +78,6 @@ class FormDataTest extends TypeTestCase
 					),
 				],
 				'isValid' => true,
-			],
-
-			// 3) Puste pole name => ma nie przejść
-			'empty name' => [
-				'formData' => [
-					'name'      => '',
-					'lastname'  => 'Wojcik',
-					'attachment' => new UploadedFile(
-						$validImagePath,
-						'validImage.png',
-						'image/png',
-						null,
-						false
-					),
-				],
-				'isValid' => false,
-			],
-
-			// 4) Puste pole lastname => ma nie przejść
-			'empty lastname' => [
-				'formData' => [
-					'name'      => 'Mateusz',
-					'lastname'  => '',
-					'attachment' => new UploadedFile(
-						$validImagePath,
-						'validImage.png',
-						'image/png',
-						null,
-						false
-					),
-				],
-				'isValid' => false,
 			],
 
 			// 5) Plik przekracza limit 2 MB => ma nie przejść
