@@ -25,7 +25,7 @@ class FormDataTest extends TypeTestCase
 		$tooLargeImagePath= sys_get_temp_dir() . '/tooLargeImage.png';
 
 		if (!file_exists($validImagePath)) {
-			file_put_contents($validImagePath, str_repeat('A', 1024 * 1024)); // 1 MB
+			file_put_contents($validImagePath, str_repeat('A', 1024 * 1024));
 		}
 
 		if (!file_exists($invalidMimePath)) {
@@ -64,7 +64,6 @@ class FormDataTest extends TypeTestCase
 				'isValid' => false,
 			],
 
-			// 2) Wszystko poprawne, plik < 2 MB, MIME = image/png
 			'valid data with file' => [
 				'formData' => [
 					'name'      => 'Mateusz',
@@ -74,13 +73,12 @@ class FormDataTest extends TypeTestCase
 						'validImage.png',
 						'image/png',
 						null,
-						false
+						true
 					),
 				],
 				'isValid' => true,
 			],
 
-			// 5) Plik przekracza limit 2 MB => ma nie przejść
 			'too large attachment' => [
 				'formData' => [
 					'name'      => 'Mateusz',
@@ -90,13 +88,12 @@ class FormDataTest extends TypeTestCase
 						'tooLargeImage.png',
 						'image/png',
 						null,
-						false
+						true
 					),
 				],
 				'isValid' => false,
 			],
 
-			// 6) Niedozwolony typ MIME (text/plain) => ma nie przejść
 			'invalid mime type' => [
 				'formData' => [
 					'name'      => 'Mateusz',
@@ -106,7 +103,7 @@ class FormDataTest extends TypeTestCase
 						'invalidMime.txt',
 						'text/plain',
 						null,
-						false
+						true
 					),
 				],
 				'isValid' => false,
@@ -154,6 +151,7 @@ class FormDataTest extends TypeTestCase
 	{
 		$form = $this->formFactory->create(UserForm::class);
 		$form->submit($formData);
+
 		$this->assertEquals($isValid, $form->isValid());
 	}
 }
