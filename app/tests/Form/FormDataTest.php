@@ -2,6 +2,7 @@
 
 namespace App\Tests\Form;
 
+use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Forms;
@@ -55,8 +56,8 @@ class FormDataTest extends TypeTestCase
 						$validImagePath,
 						'validImage.png',
 						'image/png',
-						null,   // czwarty argument to $error => null => UPLOAD_ERR_OK
-						false   // piąty argument to $test => false
+						null,
+						false
 					),
 				],
 				'isValid' => true,
@@ -134,6 +135,7 @@ class FormDataTest extends TypeTestCase
 
 		$this->formFactory = Forms::createFormFactoryBuilder()
 			->addExtension(new ValidatorExtension($validator))
+			->addExtension(new HttpFoundationExtension())
 			->getFormFactory();
 
 		parent::setUp();
