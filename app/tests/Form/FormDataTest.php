@@ -8,21 +8,15 @@ use App\Form\UserForm;
 
 class FormDataTest extends TypeTestCase
 {
-	/**
-	 * Metoda data provider tworzy (jeśli nie istnieją) pliki testowe i zwraca
-	 * scenariusze testowe. W ten sposób pliki będą dostępne, zanim testy się rozpoczną.
-	 */
 	public static function formDataProvider(): array
 	{
 		$testFilePath = sys_get_temp_dir() . '/testfile.txt';
 		$largeFilePath = sys_get_temp_dir() . '/largefile.txt';
 
-		// Tworzymy mały plik testowy (jeśli nie istnieje)
 		if (!file_exists($testFilePath)) {
 			file_put_contents($testFilePath, 'This is a test file.');
 		}
 
-		// Tworzymy duży plik (3 MB) (jeśli nie istnieje)
 		if (!file_exists($largeFilePath)) {
 			file_put_contents($largeFilePath, str_repeat('A', 3 * 1024 * 1024));
 		}
@@ -87,10 +81,6 @@ class FormDataTest extends TypeTestCase
 		];
 	}
 
-	/**
-	 * Możesz zachować tę metodę, jeśli chcesz posprzątać pliki po zakończeniu wszystkich testów.
-	 * Gdy testy się skończą, usuniemy pliki.
-	 */
 	public static function tearDownAfterClass(): void
 	{
 		$testFilePath = sys_get_temp_dir() . '/testfile.txt';
