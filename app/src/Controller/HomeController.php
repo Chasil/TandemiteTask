@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\UserData;
 use App\Form\UserForm;
 use App\Message\SaveUserDataMessage;
+use App\Service\FileUploader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController
 {
 	#[Route('/', name: 'app_home')]
-	public function index(Request $request, MessageBusInterface $bus): Response
+	public function index(Request $request, MessageBusInterface $bus, FileUploader $fileUploader): Response
 	{
 		$userData = new UserData();
 
@@ -26,13 +27,8 @@ class HomeController extends AbstractController
 			$newFilename = null;
 
 			if ($uploadedFile) {
-				$newFilename = uniqid() . '.' . $uploadedFile->guessExtension();
-
 				try {
-					$uploadedFile->move(
-						$this->getParameter('uploads_directory'),
-						$newFilename
-					);
+					$newFilename = $fileUploader->upload($uploadedFile);
 				} catch (\Exception $e) {
 					$this->addFlash('error', 'An error occurred while uploading the file.');
 					return $this->redirectToRoute('app_home');
