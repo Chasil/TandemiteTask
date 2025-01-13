@@ -31,6 +31,7 @@ class UserForm extends AbstractType
 				],
 			])
 			->add('attachment', FileType::class, [
+				'required' => false,
 				'constraints' => [
 					new File([
 						'maxSize' => '2M',

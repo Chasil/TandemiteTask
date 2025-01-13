@@ -2,78 +2,125 @@
 
 namespace App\Tests\Form;
 
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\Forms;
 use Symfony\Component\Form\Test\TypeTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\UserForm;
+use Symfony\Component\Validator\Validation;
 
 class FormDataTest extends TypeTestCase
 {
+	protected FormFactoryInterface $formFactory;
+
+	/**
+	 * @return array[]
+	 */
 	public static function formDataProvider(): array
 	{
-		$testFilePath = sys_get_temp_dir() . '/testfile.txt';
-		$largeFilePath = sys_get_temp_dir() . '/largefile.txt';
+		$validImagePath   = sys_get_temp_dir() . '/validImage.png';
+		$invalidMimePath  = sys_get_temp_dir() . '/invalidMime.txt';
+		$tooLargeImagePath= sys_get_temp_dir() . '/tooLargeImage.png';
 
-		if (!file_exists($testFilePath)) {
-			file_put_contents($testFilePath, 'This is a test file.');
+		if (!file_exists($validImagePath)) {
+			file_put_contents($validImagePath, str_repeat('A', 1024 * 1024)); // 1 MB
 		}
 
-		if (!file_exists($largeFilePath)) {
-			file_put_contents($largeFilePath, str_repeat('A', 3 * 1024 * 1024));
+		if (!file_exists($invalidMimePath)) {
+			file_put_contents($invalidMimePath, 'Some text content');
+		}
+
+		if (!file_exists($tooLargeImagePath)) {
+			file_put_contents($tooLargeImagePath, str_repeat('A', 3 * 1024 * 1024));
 		}
 
 		return [
-			'valid data' => [
+			// 1) Brak pliku => powinno przejść, bo pole jest 'required' => false
+			'valid no file' => [
 				'formData' => [
-					'name' => 'Mateusz',
-					'lastname' => 'Wojcik',
+					'name'      => 'Jan',
+					'lastname'  => 'Kowalski',
+					'attachment' => null, // brak pliku
+				],
+				'isValid' => true,
+			],
+
+			// 2) Wszystko poprawne, plik < 2 MB, MIME = image/png
+			'valid data with file' => [
+				'formData' => [
+					'name'      => 'Mateusz',
+					'lastname'  => 'Wojcik',
 					'attachment' => new UploadedFile(
-						$testFilePath,
-						'testfile.txt',
-						'text/plain',
-						null,
-						true
+						$validImagePath,
+						'validImage.png',
+						'image/png',
+						null,   // czwarty argument to $error => null => UPLOAD_ERR_OK
+						false   // piąty argument to $test => false
 					),
 				],
 				'isValid' => true,
 			],
+
+			// 3) Puste pole name => ma nie przejść
 			'empty name' => [
 				'formData' => [
-					'name' => '',
-					'lastname' => 'Wojcik',
+					'name'      => '',
+					'lastname'  => 'Wojcik',
 					'attachment' => new UploadedFile(
-						$testFilePath,
-						'testfile.txt',
-						'text/plain',
+						$validImagePath,
+						'validImage.png',
+						'image/png',
 						null,
-						true
+						false
 					),
 				],
 				'isValid' => false,
 			],
+
+			// 4) Puste pole lastname => ma nie przejść
 			'empty lastname' => [
 				'formData' => [
-					'name' => 'Mateusz',
-					'lastname' => '',
+					'name'      => 'Mateusz',
+					'lastname'  => '',
 					'attachment' => new UploadedFile(
-						$testFilePath,
-						'testfile.txt',
-						'text/plain',
+						$validImagePath,
+						'validImage.png',
+						'image/png',
 						null,
-						true
+						false
 					),
 				],
 				'isValid' => false,
 			],
-			'large attachment' => [
+
+			// 5) Plik przekracza limit 2 MB => ma nie przejść
+			'too large attachment' => [
 				'formData' => [
-					'name' => 'Mateusz',
-					'lastname' => 'Wojcik',
+					'name'      => 'Mateusz',
+					'lastname'  => 'Wojcik',
 					'attachment' => new UploadedFile(
-						$largeFilePath,
-						'largefile.txt',
+						$tooLargeImagePath,
+						'tooLargeImage.png',
+						'image/png',
+						null,
+						false
+					),
+				],
+				'isValid' => false,
+			],
+
+			// 6) Niedozwolony typ MIME (text/plain) => ma nie przejść
+			'invalid mime type' => [
+				'formData' => [
+					'name'      => 'Mateusz',
+					'lastname'  => 'Wojcik',
+					'attachment' => new UploadedFile(
+						$invalidMimePath,
+						'invalidMime.txt',
 						'text/plain',
-						3000000, // 3 MB
-						true
+						null,
+						false
 					),
 				],
 				'isValid' => false,
@@ -81,17 +128,33 @@ class FormDataTest extends TypeTestCase
 		];
 	}
 
+	protected function setUp(): void
+	{
+		$validator = Validation::createValidator();
+
+		$this->formFactory = Forms::createFormFactoryBuilder()
+			->addExtension(new ValidatorExtension($validator))
+			->getFormFactory();
+
+		parent::setUp();
+	}
+
 	public static function tearDownAfterClass(): void
 	{
-		$testFilePath = sys_get_temp_dir() . '/testfile.txt';
-		$largeFilePath = sys_get_temp_dir() . '/largefile.txt';
+		$validImagePath = sys_get_temp_dir() . '/validImage.png';
+		$invalidMimePath = sys_get_temp_dir() . '/invalidMime.txt';
+		$tooLargeImagePath = sys_get_temp_dir() . '/tooLargeImage.png';
 
-		if (file_exists($testFilePath)) {
-			unlink($testFilePath);
+		if (file_exists($validImagePath)) {
+			unlink($validImagePath);
 		}
 
-		if (file_exists($largeFilePath)) {
-			unlink($largeFilePath);
+		if (file_exists($invalidMimePath)) {
+			unlink($invalidMimePath);
+		}
+
+		if (file_exists($tooLargeImagePath)) {
+			unlink($tooLargeImagePath);
 		}
 
 		parent::tearDownAfterClass();
@@ -102,9 +165,8 @@ class FormDataTest extends TypeTestCase
 	 */
 	public function testSubmitValidData(array $formData, bool $isValid): void
 	{
-		$form = $this->factory->create(UserForm::class);
+		$form = $this->formFactory->create(UserForm::class);
 		$form->submit($formData);
-
 		$this->assertEquals($isValid, $form->isValid());
 	}
 }
