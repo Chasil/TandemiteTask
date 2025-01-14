@@ -47,13 +47,9 @@ class FormDataTest extends TypeTestCase
 
 	public static function fileConstraintsProvider(): array
 	{
-		$validImagePath   = sys_get_temp_dir() . '/validImage.png';
 		$invalidMimePath  = sys_get_temp_dir() . '/invalidMime.txt';
 		$tooLargeImagePath= sys_get_temp_dir() . '/tooLargeImage.png';
 
-		if (!file_exists($validImagePath)) {
-			file_put_contents($validImagePath, str_repeat('A', 1024 * 1024));
-		}
 		if (!file_exists($invalidMimePath)) {
 			file_put_contents($invalidMimePath, 'Some text content');
 		}
@@ -107,11 +103,10 @@ class FormDataTest extends TypeTestCase
 
 	public static function tearDownAfterClass(): void
 	{
-		$validImagePath   = sys_get_temp_dir() . '/validImage.png';
 		$invalidMimePath  = sys_get_temp_dir() . '/invalidMime.txt';
 		$tooLargeImagePath= sys_get_temp_dir() . '/tooLargeImage.png';
 
-		foreach ([$validImagePath, $invalidMimePath, $tooLargeImagePath] as $file) {
+		foreach ([$invalidMimePath, $tooLargeImagePath] as $file) {
 			if (file_exists($file)) {
 				unlink($file);
 			}
